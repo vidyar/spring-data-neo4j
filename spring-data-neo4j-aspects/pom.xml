@@ -236,6 +236,12 @@
 				</executions>
 				<configuration>
 					<outxml>true</outxml>
+                    <weaveDependencies>
+                        <dependency>
+                            <groupId>org.springframework.data</groupId>
+                     		<artifactId>spring-data-neo4j</artifactId>
+                        </dependency>
+                    </weaveDependencies>
 					<aspectLibraries>
 						<aspectLibrary>
 							<groupId>org.springframework</groupId>
