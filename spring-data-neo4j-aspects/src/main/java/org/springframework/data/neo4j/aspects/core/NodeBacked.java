@@ -16,9 +16,10 @@
 
 package org.springframework.data.neo4j.aspects.core;
 
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.springframework.data.neo4j.aspects.support.node.ManagedNodeEntity;
+import org.springframework.data.neo4j.aspects.support.relationship.ManagedRelationshipEntity;
 import org.springframework.data.neo4j.core.EntityPath;
 
 import java.util.Map;
@@ -29,16 +30,7 @@ import java.util.Map;
  *
  * @author Rod Johnson
  */
-public interface NodeBacked extends GraphBacked<Node,NodeBacked> {
-
-    /**
-     * Attach the entity inside a running transaction. Creating or changing an entity outside of a transaction
-     * detaches it. It must be subsequently attached in order to be persisted.
-     *
-     * @return the attached entity
-     */
-    <T extends NodeBacked> T persist();
-
+public interface NodeBacked extends ManagedNodeEntity {
 
     /**
      * <p>
@@ -65,12 +57,12 @@ public interface NodeBacked extends GraphBacked<Node,NodeBacked> {
      * @param allowDuplicates duplication relationships of the same type are allowed between two entities
      * @return relationship entity of specified relationshipClass
      */
-    <R extends RelationshipBacked, N extends NodeBacked> R relateTo(N target, Class<R> relationshipClass, String relationshipType,boolean allowDuplicates);
+    <R extends ManagedRelationshipEntity, N extends ManagedNodeEntity> R relateTo(N target, Class<R> relationshipClass, String relationshipType,boolean allowDuplicates);
 
     /**
      * delegates to relateTo with allowDuplicates set to false
      */
-    <R extends RelationshipBacked, N extends NodeBacked> R relateTo(N target, Class<R> relationshipClass, String relationshipType);
+    <R extends ManagedRelationshipEntity, N extends ManagedNodeEntity> R relateTo(N target, Class<R> relationshipClass, String relationshipType);
 
 
     /**
@@ -79,7 +71,7 @@ public interface NodeBacked extends GraphBacked<Node,NodeBacked> {
      * @param targetType type to project to
      * @return new instance of specified type, sharing the same underlying node with this entity
      */
-    <T extends NodeBacked> T projectTo(Class<T> targetType);
+    <T extends ManagedNodeEntity> T projectTo(Class<T> targetType);
 
 
     /**
@@ -108,7 +100,7 @@ public interface NodeBacked extends GraphBacked<Node,NodeBacked> {
      * @return Lazy {@link java.lang.Iterable} over the traversal result paths, wrapped as entity paths @{link EntityPath}
      * entity instances
      */
-    <S extends NodeBacked, E extends NodeBacked> Iterable<EntityPath<S,E>> findAllPathsByTraversal(TraversalDescription traversalDescription);
+    <S extends ManagedNodeEntity, E extends ManagedNodeEntity> Iterable<EntityPath<S,E>> findAllPathsByTraversal(TraversalDescription traversalDescription);
 
     /**
      * Removes the all relationships of the given type between this entity's underlying node and the target
@@ -120,7 +112,7 @@ public interface NodeBacked extends GraphBacked<Node,NodeBacked> {
      * @param target           other node entity
      * @param relationshipType type to be removed
      */
-    void removeRelationshipTo(NodeBacked target, String relationshipType);
+    void removeRelationshipTo(ManagedNodeEntity target, String relationshipType);
 
     /**
      * Finds the relationship of the specified type, from this entity's underlying node to the target entity's
@@ -131,7 +123,7 @@ public interface NodeBacked extends GraphBacked<Node,NodeBacked> {
      * @param type              type of the sought relationship
      * @return Instance of the requested relationshipClass if the relationship was found, null otherwise
      */
-    <R extends RelationshipBacked> R getRelationshipTo(NodeBacked target, Class<R> relationshipClass, String type);
+    <R extends ManagedRelationshipEntity> R getRelationshipTo(ManagedNodeEntity target, Class<R> relationshipClass, String type);
 
 
     <T> Iterable<T> findAllByQuery(final String query, final Class<T> targetType,Map<String,Object> params);
@@ -150,7 +142,7 @@ public interface NodeBacked extends GraphBacked<Node,NodeBacked> {
      * @param type              type of the sought relationship
      * @return requested relationship if it was found, null otherwise
      */
-    Relationship getRelationshipTo(NodeBacked target, String type);
+    Relationship getRelationshipTo(ManagedNodeEntity target, String type);
 
     /**
      * Creates a relationship to the target node entity with the given relationship type.
@@ -160,9 +152,17 @@ public interface NodeBacked extends GraphBacked<Node,NodeBacked> {
      * @param allowDuplicates duplication relationships of the same type are allowed between two entities
      * @return the newly created relationship to the target node
      */
-    Relationship relateTo(NodeBacked target, String type, boolean allowDuplicates);
+    Relationship relateTo(ManagedNodeEntity target, String type, boolean allowDuplicates);
     /**
      * delegates to relateTo with allowDuplicates set to false
      */
-    Relationship relateTo(NodeBacked target, String type);
+    Relationship relateTo(ManagedNodeEntity target, String type);
+
+    /**
+     * removes the entity using @{link GraphDatabaseContext.removeNodeEntity}
+     * the entity and relationship are still accessible after removal but before transaction commit
+     * but all modifications will throw an exception
+     */
+    void remove();
+
 }

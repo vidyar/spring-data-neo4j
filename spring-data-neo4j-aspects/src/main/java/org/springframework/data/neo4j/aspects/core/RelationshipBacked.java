@@ -16,19 +16,18 @@
 
 package org.springframework.data.neo4j.aspects.core;
 
-import org.neo4j.graphdb.Relationship;
+import org.springframework.data.neo4j.aspects.support.relationship.ManagedRelationshipEntity;
 
 /**
  * concrete interface introduced onto Relationship entities by the {@link org.springframework.data.neo4j.support.relationship.Neo4jRelationshipBacking}
  * aspect, encapsulates a neo4j relationship as backing state
  */
-public interface RelationshipBacked extends GraphBacked<Relationship,RelationshipBacked>{
+public interface RelationshipBacked extends ManagedRelationshipEntity {
 
     /**
      * @return the id of the underlying relationship or null if there is none
      */
 	Long getRelationshipId();
-
 
     /**
      * Project this relationship entity as another relationship backed type. The same underlying relationship will be
@@ -37,7 +36,13 @@ public interface RelationshipBacked extends GraphBacked<Relationship,Relationshi
      * @param targetType type to project to
      * @return new instance of specified type, sharing the same underlying relationship with this entity
      */
-    <R extends RelationshipBacked> R projectTo(Class<R> targetType);
+    <R extends ManagedRelationshipEntity> R projectTo(Class<R> targetType);
 
+    /**
+     * removes the entity using @{link GraphDatabaseContext.removeNodeEntity}
+     * the entity and relationship are still accessible after removal but before transaction commit
+     * but all modifications will throw an exception
+     */
+    void remove();
 
 }

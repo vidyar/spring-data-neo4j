@@ -40,7 +40,7 @@ public class EntityStateHandler {
             return;
         }
         if (isManaged(entity)) {
-            ((ManagedEntity<S, Object>) entity).setPersistentState(state);
+            ((ManagedEntity<S>) entity).setPersistentState(state);
             return;
         }
         final Class<?> type = entity.getClass();
@@ -79,7 +79,7 @@ public class EntityStateHandler {
             return (S) entity;
         }
         if (isManaged(entity)) {
-            return ((ManagedEntity<S, Object>) entity).getPersistentState();
+            return ((ManagedEntity<S>) entity).getPersistentState();
         }
         final Number id = getId(entity);
         if (id == null) return null;

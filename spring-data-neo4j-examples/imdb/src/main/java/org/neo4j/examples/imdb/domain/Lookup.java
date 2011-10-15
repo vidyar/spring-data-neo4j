@@ -3,6 +3,7 @@ package org.neo4j.examples.imdb.domain;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 
 import java.util.Set;
 
@@ -11,7 +12,7 @@ import java.util.Set;
  * @since 16.03.11
  */
 @NodeEntity
-public class Lookup {
+public class Lookup implements NodeBacked {
     private
     @Indexed
     String word;

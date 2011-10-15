@@ -18,13 +18,14 @@ package org.springframework.data.neo4j.aspects;
 
 import org.springframework.data.neo4j.aspects.Person;
 import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 
 /**
  * @author mh
  * @since 18.02.11
  */
 @NodeEntity
-public class Developer {
+public class Developer implements NodeBacked {
     String name;
 
     Person spouse;

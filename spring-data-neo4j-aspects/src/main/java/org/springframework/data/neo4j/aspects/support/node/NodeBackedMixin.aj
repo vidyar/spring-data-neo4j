@@ -3,6 +3,7 @@ package org.springframework.data.neo4j.aspects.support.node;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.data.neo4j.aspects.core.NodeBacked;
+import org.springframework.data.neo4j.aspects.support.relationship.ManagedRelationshipEntity;
 import org.springframework.data.neo4j.support.RelationshipResult;
 import org.springframework.data.neo4j.support.path.EntityPathPathIterableWrapper;
 import org.springframework.data.neo4j.support.query.CypherQueryExecutor;
@@ -56,21 +57,21 @@ import static org.springframework.data.neo4j.support.DoReturn.unwrap;
 public privileged aspect NodeBackedMixin {
 
      declare @type: NodeBacked+: @Configurable;
-     declare @type: NodeBacked+: @NodeEntity;
+     declare @type: !@NodeEntity NodeBacked+: @NodeEntity;
 
-    public <T extends NodeBacked> T NodeBacked.projectTo(Class<T> targetType) {
+    public <T extends ManagedNodeEntity> T NodeBacked.projectTo(Class<T> targetType) {
         return (T)graphDatabaseContext().projectTo( this, targetType);
     }
 
-	public Relationship NodeBacked.relateTo(NodeBacked target, String type) {
+	public Relationship NodeBacked.relateTo(ManagedNodeEntity target, String type) {
         return this.relateTo(target, type, false);
     }
-    public Relationship NodeBacked.relateTo(NodeBacked target, String type, boolean allowDuplicates) {
+    public Relationship NodeBacked.relateTo(ManagedNodeEntity target, String type, boolean allowDuplicates) {
         final RelationshipResult result = Neo4jNodeBacking.entityStateHandler().relateTo(this, target, type, allowDuplicates);
         return result.relationship;
 	}
 
-    public Relationship NodeBacked.getRelationshipTo(NodeBacked target, String type) {
+    public Relationship NodeBacked.getRelationshipTo(ManagedNodeEntity target, String type) {
         return graphDatabaseContext().getRelationshipTo(this,target,null,type);
     }
 
@@ -100,16 +101,16 @@ public privileged aspect NodeBackedMixin {
         return executor.queryForObject(query, targetType,params);
     }
 
-    public <S extends NodeBacked, E extends NodeBacked> Iterable<EntityPath<S,E>> NodeBacked.findAllPathsByTraversal(TraversalDescription traversalDescription) {
+    public <S extends ManagedNodeEntity, E extends ManagedNodeEntity> Iterable<EntityPath<S,E>> NodeBacked.findAllPathsByTraversal(TraversalDescription traversalDescription) {
         if (!hasPersistentState()) throw new IllegalStateException("No node attached to " + this);
         final Traverser traverser = traversalDescription.traverse(this.getPersistentState());
         return new EntityPathPathIterableWrapper<S, E>(traverser, graphDatabaseContext());
     }
 
-    public <R extends RelationshipBacked, N extends NodeBacked> R NodeBacked.relateTo(N target, Class<R> relationshipClass, String relationshipType) {
+    public <R extends ManagedRelationshipEntity, N extends ManagedNodeEntity> R NodeBacked.relateTo(N target, Class<R> relationshipClass, String relationshipType) {
         return graphDatabaseContext().relateTo(this, target, relationshipClass, relationshipType, false);
     }
-    public <R extends RelationshipBacked, N extends NodeBacked> R NodeBacked.relateTo(N target, Class<R> relationshipClass, String relationshipType, boolean allowDuplicates) {
+    public <R extends ManagedRelationshipEntity, N extends ManagedNodeEntity> R NodeBacked.relateTo(N target, Class<R> relationshipClass, String relationshipType, boolean allowDuplicates) {
         return graphDatabaseContext().relateTo(this,target,relationshipClass, relationshipType,allowDuplicates);
     }
 
@@ -117,11 +118,11 @@ public privileged aspect NodeBackedMixin {
         graphDatabaseContext().removeNodeEntity(this);
     }
 
-    public void NodeBacked.removeRelationshipTo(NodeBacked target, String relationshipType) {
+    public void NodeBacked.removeRelationshipTo(ManagedNodeEntity target, String relationshipType) {
         graphDatabaseContext().removeRelationshipTo(this,target,relationshipType);
     }
 
-    public <R extends RelationshipBacked> R NodeBacked.getRelationshipTo( NodeBacked target, Class<R> relationshipClass, String type) {
+    public <R extends ManagedRelationshipEntity> R NodeBacked.getRelationshipTo( ManagedNodeEntity target, Class<R> relationshipClass, String type) {
         return (R)graphDatabaseContext().getRelationshipTo(this,target,relationshipClass,type);
     }
 

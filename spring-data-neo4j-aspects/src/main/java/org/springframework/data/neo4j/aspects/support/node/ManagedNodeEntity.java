@@ -13,18 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.springframework.data.neo4j.aspects.support.node;
 
-package org.springframework.data.neo4j.aspects.core;
-
-import org.springframework.data.neo4j.support.ManagedEntity;
+import org.neo4j.graphdb.Node;
+import org.springframework.data.neo4j.aspects.core.GraphBacked;
 
 /**
- * super interface denoting entities that are graph backed, the backing STATE can be a {@link org.neo4j.graphdb.Node}
- * or a {@link org.neo4j.graphdb.Relationship}.
- * Subclasses of this interface bind the type parameter to a concrete Node or Relationship state.
- *
- * @author Michael Hunger
- * @since 21.09.2010
+ * @author mh
+ * @since 15.10.11
  */
-public interface GraphBacked<STATE> extends ManagedEntity<STATE> {
+public interface ManagedNodeEntity extends GraphBacked<Node> {
 }

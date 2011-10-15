@@ -3,12 +3,13 @@ package org.neo4j.examples.imdb.domain;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 
 import java.util.Set;
 
 // START SNIPPET: ActorClass
 @NodeEntity
-public class Actor {
+public class Actor implements NodeBacked {
     @Indexed
     private String name;
 

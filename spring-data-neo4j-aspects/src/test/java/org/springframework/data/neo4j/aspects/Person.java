@@ -31,11 +31,12 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
 
 
 @NodeEntity
-public class Person {
+public class Person implements NodeBacked {
 
     public static final String NAME_INDEX = "name_index";
     @GraphId

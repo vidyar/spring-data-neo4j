@@ -24,13 +24,14 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.impl.traversal.TraversalDescriptionImpl;
 import org.springframework.data.neo4j.annotation.*;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 import org.springframework.data.neo4j.core.FieldTraversalDescriptionBuilder;
 import org.springframework.data.neo4j.mapping.Neo4jPersistentProperty;
 
 import java.util.Collection;
 
 @NodeEntity
-public class Group {
+public class Group implements NodeBacked {
 
     public final static String OTHER_NAME_INDEX="other_name";
     public static final String SEARCH_GROUPS_INDEX = "search-groups";

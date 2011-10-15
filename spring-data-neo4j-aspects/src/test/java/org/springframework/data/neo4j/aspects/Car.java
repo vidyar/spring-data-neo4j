@@ -18,9 +18,10 @@ package org.springframework.data.neo4j.aspects;
 
 import org.neo4j.graphdb.Node;
 import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 
 @NodeEntity
-public abstract class Car {
+public abstract class Car implements NodeBacked {
 	public Car() {
 	}
 

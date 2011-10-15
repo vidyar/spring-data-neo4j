@@ -17,6 +17,7 @@
 package org.springframework.data.neo4j.partial;
 
 import org.springframework.data.neo4j.annotation.*;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -27,7 +28,7 @@ import java.util.Set;
  */
 @Entity
 @NodeEntity(partial = true)
-public class User {
+public class User implements NodeBacked {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE, generator = "id_gen")
     @TableGenerator(name = "id_gen", table = "SEQUENCE", pkColumnName = "SEQ_NAME", valueColumnName = "SEQ_COUNT", pkColumnValue = "SEQ_GEN", allocationSize = 1)

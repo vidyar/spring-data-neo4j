@@ -17,13 +17,14 @@
 package org.springframework.data.neo4j.aspects;
 
 import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 
 /**
  * @author mh
  * @since 20.01.11
  */
 @NodeEntity
-public class Named {
+public class Named implements NodeBacked {
     public String name;
 
     public String getName() {

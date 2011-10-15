@@ -27,7 +27,6 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
 
-import org.springframework.data.neo4j.support.ManagedEntity;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
@@ -70,7 +69,7 @@ public privileged aspect Neo4jNodeBacking {
 
     protected final Log log = LogFactory.getLog(getClass());
 
-    declare parents : (@NodeEntity *) implements ManagedEntity<Node,NodeBacked>;
+    declare parents : (@NodeEntity *) implements ManagedNodeEntity;
 
     private GraphDatabaseContext graphDatabaseContext;
     private NodeEntityStateFactory entityStateFactory;
@@ -78,7 +77,7 @@ public privileged aspect Neo4jNodeBacking {
     /**
      * State accessors that encapsulate the underlying state and the behaviour related to it (field access, creation)
      */
-    private transient EntityState<Node> ManagedEntity.entityState;
+    private transient EntityState<Node> ManagedNodeEntity.entityState;
 
 
     public void setGraphDatabaseContext(GraphDatabaseContext graphDatabaseContext) {
@@ -97,23 +96,23 @@ public privileged aspect Neo4jNodeBacking {
 
 
 
-    protected pointcut entityFieldGet(ManagedEntity entity) :
-            get(* ManagedEntity+.*) &&
+    protected pointcut entityFieldGet(ManagedNodeEntity entity) :
+            get(* ManagedNodeEntity+.*) &&
             this(entity) &&
-            !get(* ManagedEntity.*);
+            !get(* ManagedNodeEntity.*);
 
 
-    protected pointcut entityFieldSet(ManagedEntity entity, Object newVal) :
-            set(* ManagedEntity+.*) &&
+    protected pointcut entityFieldSet(ManagedNodeEntity entity, Object newVal) :
+            set(* ManagedNodeEntity+.*) &&
             this(entity) &&
             args(newVal) &&
-            !set(* ManagedEntity.*);
+            !set(* ManagedNodeEntity.*);
 
 
     /**
      * pointcut for constructors not taking a node to be handled by the aspect and the {@link org.springframework.data.neo4j.core.EntityState}
      */
-	pointcut arbitraryUserConstructorOfNodeBackedObject(ManagedEntity entity) :
+	pointcut arbitraryUserConstructorOfNodeBackedObject(ManagedNodeEntity entity) :
 		execution((@NodeEntity *).new(..)) &&
 		!execution((@NodeEntity *).new(Node)) &&
 		this(entity) && !cflowbelow(call(* fromStateInternal(..)));
@@ -126,7 +125,7 @@ public privileged aspect Neo4jNodeBacking {
      * When running outside of a transaction, no node is created, this is handled later when the entity is accessed within
      * a transaction again.
      */
-    before(ManagedEntity entity): arbitraryUserConstructorOfNodeBackedObject(entity) {
+    before(ManagedNodeEntity entity): arbitraryUserConstructorOfNodeBackedObject(entity) {
         if (entityStateFactory == null) {
             log.error("entityStateFactory not set, not creating accessors for " + entity.getClass());
         } else {
@@ -136,26 +135,26 @@ public privileged aspect Neo4jNodeBacking {
     }
 
 
-    public <T> T ManagedEntity.persist() {
+    public <T> T ManagedNodeEntity.persist() {
         return (T)this.entityState.persist();
     }
 
-	public void ManagedEntity.setPersistentState(Node n) {
+	public void ManagedNodeEntity.setPersistentState(Node n) {
         if (this.entityState == null) {
             this.entityState = Neo4jNodeBacking.aspectOf().entityStateFactory.getEntityState(this, false);
         }
         this.entityState.setPersistentState(n);
 	}
 
-	public Node ManagedEntity.getPersistentState() {
+	public Node ManagedNodeEntity.getPersistentState() {
 		return this.entityState!=null ? this.entityState.getPersistentState() : null;
 	}
 	
-    public EntityState<Node> ManagedEntity.getEntityState() {
+    public EntityState<Node> ManagedNodeEntity.getEntityState() {
         return entityState;
     }
 
-    public boolean ManagedEntity.hasPersistentState() {
+    public boolean ManagedNodeEntity.hasPersistentState() {
         return this.entityState!=null && this.entityState.hasPersistentState();
     }
 
@@ -168,7 +167,7 @@ public privileged aspect Neo4jNodeBacking {
      * @param obj
      * @return result of equals operation fo the underlying node, false if there is none
      */
-	public boolean ManagedEntity.equals(Object obj) {
+	public boolean ManagedNodeEntity.equals(Object obj) {
         return entityStateHandler().equals(this, obj);
 	}
 
@@ -179,14 +178,14 @@ public privileged aspect Neo4jNodeBacking {
     /**
      * @return result of the hashCode of the underlying node (if any, otherwise identityHashCode)
      */
-	public int ManagedEntity.hashCode() {
+	public int ManagedNodeEntity.hashCode() {
         return entityStateHandler().hashCode(this);
 	}
 
     /**
      * delegates field reads to the state accessors instance
      */
-    Object around(ManagedEntity entity): entityFieldGet(entity) {
+    Object around(ManagedNodeEntity entity): entityFieldGet(entity) {
         if (entity.entityState==null) return proceed(entity);
         Object result=entity.entityState.getValue(field(thisJoinPoint));
         if (result instanceof DoReturn) return unwrap(result);
@@ -196,7 +195,7 @@ public privileged aspect Neo4jNodeBacking {
     /**
      * delegates field writes to the state accessors instance
      */
-    Object around(ManagedEntity entity, Object newVal) : entityFieldSet(entity, newVal) {
+    Object around(ManagedNodeEntity entity, Object newVal) : entityFieldSet(entity, newVal) {
         if (entity.entityState==null) return proceed(entity,newVal);
         Object result=entity.entityState.setValue(field(thisJoinPoint),newVal);
         if (result instanceof DoReturn) return unwrap(result);

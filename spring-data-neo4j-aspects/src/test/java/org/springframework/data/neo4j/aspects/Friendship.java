@@ -24,10 +24,12 @@ import org.springframework.data.neo4j.annotation.EndNode;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
 import org.springframework.data.neo4j.annotation.StartNode;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
+import org.springframework.data.neo4j.aspects.core.RelationshipBacked;
 import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
 
 @RelationshipEntity(useShortNames = false)
-public class Friendship {
+public class Friendship implements RelationshipBacked {
 
     public Friendship() {
 	}

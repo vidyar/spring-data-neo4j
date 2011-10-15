@@ -21,12 +21,20 @@ import org.springframework.data.neo4j.core.EntityState;
  * @author mh
  * @since 02.10.11
  */
-public interface ManagedEntity<S,T> {
-    <U extends T> U persist();
+public interface ManagedEntity<S> {
+    /**
+     * Attach the entity inside a running transaction. Creating or changing an entity outside of a transaction
+     * detaches it. It must be subsequently attached in order to be persisted.
+     *
+     * @return the attached entity
+     */
+    <T> T persist();
 
     S getPersistentState();
 
     EntityState<S> getEntityState();
 
     void setPersistentState(S state);
+
+    boolean hasPersistentState();
 }

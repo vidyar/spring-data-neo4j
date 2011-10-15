@@ -4,12 +4,13 @@ import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 
 import java.util.Set;
 
 // START SNIPPET: MovieClass
 @NodeEntity
-public class Movie {
+public class Movie implements NodeBacked {
     @Indexed
     String title;
     int year;

@@ -26,6 +26,7 @@ import org.springframework.data.neo4j.aspects.core.NodeBacked;
 import org.springframework.data.neo4j.aspects.core.RelationshipBacked;
 import org.springframework.data.neo4j.support.DoReturn;
 import org.springframework.data.neo4j.core.EntityState;
+import org.springframework.data.neo4j.support.DoReturn;
 import org.springframework.data.neo4j.support.GraphDatabaseContext;
 import org.springframework.data.neo4j.support.relationship.RelationshipEntityStateFactory;
 
@@ -42,22 +43,26 @@ public aspect Neo4jRelationshipBacking {
 	
     protected final Log log = LogFactory.getLog(getClass());
 
-    declare parents : (@RelationshipEntity *) implements RelationshipBacked;
+    declare parents : (@RelationshipEntity *) implements ManagedRelationshipEntity;
 
-    protected pointcut entityFieldGet(RelationshipBacked entity) :
-            get(* RelationshipBacked+.*) &&
+    protected pointcut entityFieldGet(ManagedRelationshipEntity entity) :
+            get(* ManagedRelationshipEntity+.*) &&
             this(entity) &&
-            !get(* RelationshipBacked.*);
+            !get(* ManagedRelationshipEntity.*);
 
 
-    protected pointcut entityFieldSet(RelationshipBacked entity, Object newVal) :
-            set(* RelationshipBacked+.*) &&
+    protected pointcut entityFieldSet(ManagedRelationshipEntity entity, Object newVal) :
+            set(* ManagedRelationshipEntity+.*) &&
             this(entity) &&
             args(newVal) &&
-            !set(* RelationshipBacked.*);
+            !set(* ManagedRelationshipEntity.*);
 
 	private GraphDatabaseContext graphDatabaseContext;
     private RelationshipEntityStateFactory entityStateFactory;
+    /**
+     * field for {@link org.springframework.data.neo4j.core.EntityState} that takes care of all entity operations
+     */
+    private transient EntityState<Relationship> ManagedRelationshipEntity.entityState;
 
 
     public void setGraphDatabaseContext(GraphDatabaseContext graphDatabaseContext) {
@@ -68,33 +73,24 @@ public aspect Neo4jRelationshipBacking {
         this.entityStateFactory = entityStateFactory;
     }
 
-    /**
-     * field for {@link org.springframework.data.neo4j.core.EntityState} that takes care of all entity operations
-     */
-    private EntityState<Relationship> RelationshipBacked.entityState;
 
-	public void RelationshipBacked.setPersistentState(Relationship r) {
+	public void ManagedRelationshipEntity.setPersistentState(Relationship r) {
         if (this.entityState == null) {
             this.entityState = Neo4jRelationshipBacking.aspectOf().entityStateFactory.getEntityState(this, true);
         }
         this.entityState.setPersistentState(r);
 	}
 	
-	public Relationship RelationshipBacked.getPersistentState() {
+	public Relationship ManagedRelationshipEntity.getPersistentState() {
 		return this.entityState!=null ? this.entityState.getPersistentState() : null;
 	}
 
-	public boolean RelationshipBacked.hasPersistentState() {
+	public boolean ManagedRelationshipEntity.hasPersistentState() {
 		return this.entityState!=null && this.entityState.hasPersistentState();
 	}
 
-	public Long RelationshipBacked.getRelationshipId() {
-        if (!hasPersistentState()) return null;
-		return getPersistentState().getId();
-	}
 
-
-    public EntityState<Relationship> RelationshipBacked.getEntityState() {
+    public EntityState<Relationship> ManagedRelationshipEntity.getEntityState() {
         return this.entityState;
     }
 
@@ -103,11 +99,11 @@ public aspect Neo4jRelationshipBacking {
      * @param obj
      * @return result of equality check of the underlying relationship
      */
-	public final boolean RelationshipBacked.equals(Object obj) {
+	public final boolean ManagedRelationshipEntity.equals(Object obj) {
 		if (this==obj) return true;
         if (!hasPersistentState()) return false;
-        if (obj instanceof RelationshipBacked) {
-			return this.getPersistentState().equals(((RelationshipBacked) obj).getPersistentState());
+        if (obj instanceof ManagedRelationshipEntity) {
+			return this.getPersistentState().equals(((ManagedRelationshipEntity) obj).getPersistentState());
 		}
 		return false;
 	}
@@ -115,31 +111,23 @@ public aspect Neo4jRelationshipBacking {
     /**
      * @return hashCode of the underlying relationship
      */
-	public final int RelationshipBacked.hashCode() {
+	public final int ManagedRelationshipEntity.hashCode() {
         if (!hasPersistentState()) return System.identityHashCode(this);
 		return getPersistentState().hashCode();
 	}
 
-    public <T extends RelationshipBacked> T RelationshipBacked.persist() {
+    public <T> T ManagedRelationshipEntity.persist() {
         return (T)this.entityState.persist();
     }
 
-	public void RelationshipBacked.remove() {
-	     Neo4jRelationshipBacking.aspectOf().graphDatabaseContext.removeRelationshipEntity(this);
-	}
-
-    public <R extends RelationshipBacked> R  RelationshipBacked.projectTo(Class<R> targetType) {
-        return (R)Neo4jRelationshipBacking.aspectOf().graphDatabaseContext.projectTo(this, targetType);
-    }
-
-    Object around(RelationshipBacked entity): entityFieldGet(entity) {
+    Object around(ManagedRelationshipEntity entity): entityFieldGet(entity) {
         if (entity.entityState == null) return proceed(entity);
         Object result = entity.entityState.getValue(field(thisJoinPoint));
         if (result instanceof DoReturn) return unwrap(result);
         return proceed(entity);
     }
 
-    Object around(RelationshipBacked entity, Object newVal) : entityFieldSet(entity, newVal) {
+    Object around(ManagedRelationshipEntity entity, Object newVal) : entityFieldSet(entity, newVal) {
         if (entity.entityState == null) return proceed(entity,newVal);
         Object result=entity.entityState.setValue(field(thisJoinPoint),newVal);
         if (result instanceof DoReturn) return unwrap(result);
