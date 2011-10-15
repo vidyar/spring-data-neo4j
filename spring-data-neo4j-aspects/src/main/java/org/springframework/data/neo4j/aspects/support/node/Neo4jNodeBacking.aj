@@ -28,7 +28,6 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
 
 import org.springframework.data.neo4j.annotation.NodeEntity;
-import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.GraphProperty;
@@ -49,7 +48,7 @@ import org.springframework.data.neo4j.support.GraphDatabaseContext;
 
 import org.springframework.data.neo4j.support.path.EntityPathPathIterableWrapper;
 import org.springframework.data.neo4j.support.query.CypherQueryExecutor;
-
+import org.springframework.data.neo4j.aspects.support.relationship.ManagedRelationshipEntity;
 import javax.persistence.Transient;
 import javax.persistence.Entity;
 

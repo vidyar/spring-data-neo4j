@@ -23,13 +23,14 @@ import org.springframework.data.neo4j.annotation.GraphTraversal;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.transaction.annotation.Transactional;
 
 @Entity
 @Table(name = "user_account")
 @NodeEntity(partial = true)
-public class UserAccount {
+public class UserAccount implements NodeBacked {
 
     private String userName;
 

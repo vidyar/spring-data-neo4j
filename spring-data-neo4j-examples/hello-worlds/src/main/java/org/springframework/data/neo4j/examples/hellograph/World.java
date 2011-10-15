@@ -5,6 +5,7 @@ import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 
 import java.util.Set;
 
@@ -14,7 +15,7 @@ import java.util.Set;
  * This is the initial POJO in the Universe.
  */
 @NodeEntity
-public class World
+public class World implements NodeBacked
 {
     @Indexed
     private String name;

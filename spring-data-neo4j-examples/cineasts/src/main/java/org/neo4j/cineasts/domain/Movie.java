@@ -6,6 +6,7 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
 import org.springframework.data.neo4j.annotation.Indexed;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 
 import java.util.*;
 
@@ -17,7 +18,7 @@ import static org.neo4j.graphdb.Direction.INCOMING;
  * @since 04.03.11
  */
 @NodeEntity
-public class Movie {
+public class Movie implements NodeBacked {
 
     @Indexed
     String id;

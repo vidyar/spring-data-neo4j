@@ -16,17 +16,15 @@
 
 package org.springframework.data.neo4j.aspects.support.relationship;
 
+import org.springframework.data.neo4j.aspects.support.relationship.ManagedRelationshipEntity;
+import org.springframework.data.neo4j.annotation.RelationshipEntity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.FieldSignature;
 import org.neo4j.graphdb.Relationship;
-import org.springframework.data.neo4j.annotation.RelationshipEntity;
-import org.springframework.data.neo4j.aspects.core.NodeBacked;
-import org.springframework.data.neo4j.aspects.core.RelationshipBacked;
 import org.springframework.data.neo4j.support.DoReturn;
 import org.springframework.data.neo4j.core.EntityState;
-import org.springframework.data.neo4j.support.DoReturn;
 import org.springframework.data.neo4j.support.GraphDatabaseContext;
 import org.springframework.data.neo4j.support.relationship.RelationshipEntityStateFactory;
 

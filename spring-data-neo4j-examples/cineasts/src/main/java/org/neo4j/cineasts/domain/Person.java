@@ -4,6 +4,7 @@ import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 
 import java.util.Date;
 import java.util.Set;
@@ -13,7 +14,7 @@ import java.util.Set;
  * @since 12.03.11
  */
 @NodeEntity
-public class Person {
+public class Person implements NodeBacked {
     @Indexed
     String id;
     @Indexed(fulltext = true, indexName = "people")

@@ -6,6 +6,7 @@ import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.annotation.RelatedToVia;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -13,7 +14,7 @@ import java.util.Collection;
 import java.util.Set;
 
 @NodeEntity
-public class User {
+public class User implements NodeBacked {
     private static final String SALT = "cewuiqwzie";
     public static final String FRIEND = "FRIEND";
     public static final String RATED = "RATED";
