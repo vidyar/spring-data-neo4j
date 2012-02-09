@@ -25,12 +25,14 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.helpers.collection.IteratorUtil;
+import org.springframework.data.convert.EntityWriter;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.aspects.Friendship;
 import org.springframework.data.neo4j.aspects.Group;
 import org.springframework.data.neo4j.aspects.Person;
 import org.springframework.data.neo4j.aspects.SubGroup;
+import org.springframework.data.neo4j.mapping.EntityPersister;
 import org.springframework.data.neo4j.repository.GraphRepository;
 import org.springframework.data.neo4j.support.index.IndexType;
 import org.springframework.test.context.ContextConfiguration;
@@ -383,5 +385,25 @@ public class IndexTest extends EntityTestBase {
         assertEquals(1,IteratorUtil.asCollection(groupRepository.findAllByPropertyValue("admin",true)).size());
         group.setAdmin(false);
         assertEquals(0,IteratorUtil.asCollection(groupRepository.findAllByPropertyValue("admin",true)).size());
+    }
+
+    @Test
+    @Transactional
+    public void testCreateUniqueEntity() {
+        final UniqueEntity m1 = neo4jTemplate.save(new UniqueEntity("michael"));
+        final UniqueEntity m2 = neo4jTemplate.save(new UniqueEntity("michael"));
+        assertEquals(m1.getNodeId(), m2.getNodeId());
+    }
+
+    @NodeEntity
+    static class UniqueEntity {
+        @Indexed(indexType = IndexType.UNIQUE)
+        String name;
+
+        UniqueEntity() {}
+
+        UniqueEntity(String name) {
+            this.name = name;
+        }
     }
 }
