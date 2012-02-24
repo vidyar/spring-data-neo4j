@@ -39,4 +39,8 @@ public interface Neo4jPersistentEntity<T> extends PersistentEntity<T, Neo4jPersi
     RelationshipProperties getRelationshipProperties();
 
     MappingPolicy getMappingPolicy();
+
+    Neo4jPersistentProperty getUniqueProperty();
+
+    boolean isUnique();
 }

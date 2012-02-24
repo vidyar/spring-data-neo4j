@@ -46,6 +46,8 @@ public interface GraphDatabase {
 
     Node createNode(Map<String, Object> props);
 
+    Node getOrCreateNode(String index, String key, Object value, final Map<String,Object> properties);
+
     /**
      * @param id relationship id
      * @return the requested relationship of the underlying graph database

@@ -397,7 +397,7 @@ public class IndexTest extends EntityTestBase {
 
     @NodeEntity
     static class UniqueEntity {
-        @Indexed(indexType = IndexType.UNIQUE)
+        @Indexed(unique = true)
         String name;
 
         UniqueEntity() {}

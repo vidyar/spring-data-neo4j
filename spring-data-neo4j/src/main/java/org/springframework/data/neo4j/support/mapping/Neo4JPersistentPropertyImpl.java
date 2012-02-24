@@ -241,6 +241,11 @@ class Neo4jPersistentPropertyImpl extends AbstractPersistentProperty<Neo4jPersis
         return conversionService.convert(defaultValue, targetType);
     }
 
+    @Override
+    public boolean isUnique() {
+        return isIndexed() && getIndexInfo().isUnique();
+    }
+
     private Object getDefaultValue(Class<?> type) {
         if (type!=null && type.isPrimitive()) {
             if (type.equals(boolean.class)) return false;

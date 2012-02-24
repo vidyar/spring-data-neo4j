@@ -17,7 +17,6 @@ package org.springframework.data.neo4j.unique;
 
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.NodeEntity;
-import org.springframework.data.neo4j.annotation.Unique;
 
 @NodeEntity
 public class Club {

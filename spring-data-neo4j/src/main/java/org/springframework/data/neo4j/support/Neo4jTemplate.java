@@ -35,6 +35,7 @@ import org.springframework.data.neo4j.core.GraphDatabase;
 import org.springframework.data.neo4j.core.TypeRepresentationStrategy;
 import org.springframework.data.neo4j.core.UncategorizedGraphStoreException;
 import org.springframework.data.neo4j.mapping.EntityPersister;
+import org.springframework.data.neo4j.mapping.IndexInfo;
 import org.springframework.data.neo4j.mapping.MappingPolicy;
 import org.springframework.data.neo4j.mapping.Neo4jPersistentProperty;
 import org.springframework.data.neo4j.mapping.RelationshipResult;
@@ -58,6 +59,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.PostConstruct;
 import javax.validation.Validator;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.springframework.data.neo4j.support.ParameterCheck.notNull;
@@ -628,5 +630,14 @@ public class Neo4jTemplate implements Neo4jOperations, EntityPersister {
         final PropertyContainer container = entity instanceof PropertyContainer ? (PropertyContainer)entity: getPersistentState(entity);
         if (container==null) return null;
         return getInfrastructure().getTypeRepresentationStrategies().getJavaType(container);
+    }
+
+    public Node createUniqueNode(Object entity) {
+        final Neo4jPersistentEntityImpl<?> persistentEntity = getPersistentEntity(entity.getClass());
+        final Neo4jPersistentProperty uniqueProperty = persistentEntity.getUniqueProperty();
+        final Object value = uniqueProperty.getValueFromEntity(entity, MappingPolicy.MAP_FIELD_DIRECT_POLICY);
+        if (value==null) return createNode();
+        final IndexInfo indexInfo = uniqueProperty.getIndexInfo();
+        return getGraphDatabase().getOrCreateNode(indexInfo.getIndexName(), indexInfo.getIndexKey(), value, Collections.<String, Object>emptyMap());
     }
 }
