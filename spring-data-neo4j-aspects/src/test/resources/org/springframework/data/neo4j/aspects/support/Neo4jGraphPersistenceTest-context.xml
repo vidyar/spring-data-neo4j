@@ -32,7 +32,7 @@
     <bean id="conversionService" class="org.springframework.data.neo4j.fieldaccess.Neo4jConversionServiceFactoryBean"/>
 
 
-    <bean id="mappingInfrastructure" class="org.springframework.data.neo4j.support.MappingInfrastructure">
+    <bean id="mappingInfrastructure" class="org.springframework.data.neo4j.support.MappingInfrastructureFactoryBean">
         <property name="graphDatabaseService" ref="graphDatabaseService"/>
         <property name="conversionService" ref="conversionService"/>
         <property name="mappingContext" ref="mappingContext"/>
@@ -50,8 +50,8 @@
         </property>
     </bean>
 
-    <bean id="template" class="org.springframework.data.neo4j.support.Neo4jTemplate"  init-method="postConstruct">
-        <property name="infrastructure" ref="mappingInfrastructure"/>
+    <bean id="template" class="org.springframework.data.neo4j.support.Neo4jTemplate">
+        <constructor-arg name="infrastructure" ref="mappingInfrastructure"/>
     </bean>
 
 

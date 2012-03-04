@@ -19,147 +19,56 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.neo4j.annotation.QueryType;
 import org.springframework.data.neo4j.conversion.ResultConverter;
 import org.springframework.data.neo4j.core.GraphDatabase;
 import org.springframework.data.neo4j.core.TypeRepresentationStrategy;
-import org.springframework.data.neo4j.mapping.EntityInstantiator;
-import org.springframework.data.neo4j.support.conversion.EntityResultConverter;
 import org.springframework.data.neo4j.support.index.IndexProvider;
-import org.springframework.data.neo4j.support.index.IndexProviderImpl;
 import org.springframework.data.neo4j.support.mapping.EntityRemover;
 import org.springframework.data.neo4j.support.mapping.EntityStateHandler;
-import org.springframework.data.neo4j.support.mapping.EntityTools;
 import org.springframework.data.neo4j.support.mapping.Neo4jEntityPersister;
 import org.springframework.data.neo4j.support.mapping.Neo4jMappingContext;
-import org.springframework.data.neo4j.support.node.EntityStateFactory;
-import org.springframework.data.neo4j.support.node.NodeEntityInstantiator;
 import org.springframework.data.neo4j.support.query.CypherQueryExecutor;
-import org.springframework.data.neo4j.support.relationship.RelationshipEntityInstantiator;
 import org.springframework.data.neo4j.support.typerepresentation.TypeRepresentationStrategies;
-import org.springframework.data.neo4j.support.typerepresentation.TypeRepresentationStrategyFactory;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.validation.Validator;
 
 /**
- * @author mh
- * @since 17.10.11
- */
-public class MappingInfrastructure {
-    private ConversionService conversionService;
-    private Validator validator;
-    private TypeRepresentationStrategy<Node> nodeTypeRepresentationStrategy;
+* @author mh
+* @since 02.03.12
+*/
+class MappingInfrastructure implements Infrastructure {
+    private final ConversionService conversionService;
+    private final Validator validator;
+    private final TypeRepresentationStrategy<Node> nodeTypeRepresentationStrategy;
+    private final  TypeRepresentationStrategy<Relationship> relationshipTypeRepresentationStrategy;
+    private final Neo4jMappingContext mappingContext;
+    private final CypherQueryExecutor cypherQueryExecutor;
+    private final EntityStateHandler entityStateHandler;
+    private final Neo4jEntityPersister entityPersister;
+    private final EntityRemover entityRemover;
+    private final TypeRepresentationStrategies typeRepresentationStrategies;
+    private final PlatformTransactionManager transactionManager;
+    private final ResultConverter resultConverter;
+    private final IndexProvider indexProvider;
+    private final GraphDatabaseService graphDatabaseService;
+    private final GraphDatabase graphDatabase;
 
-    private TypeRepresentationStrategy<Relationship> relationshipTypeRepresentationStrategy;
-
-    private TypeRepresentationStrategyFactory typeRepresentationStrategyFactory;
-
-    private Neo4jMappingContext mappingContext;
-    private CypherQueryExecutor cypherQueryExecutor;
-    private EntityStateHandler entityStateHandler;
-    private Neo4jEntityPersister entityPersister;
-    private EntityStateFactory<Node> nodeEntityStateFactory;
-    private EntityStateFactory<Relationship> relationshipEntityStateFactory;
-    private EntityRemover entityRemover;
-    private TypeRepresentationStrategies typeRepresentationStrategies;
-    private EntityInstantiator<Relationship> relationshipEntityInstantiator;
-    private EntityInstantiator<Node> nodeEntityInstantiator;
-    private PlatformTransactionManager transactionManager;
-    private ResultConverter resultConverter;
-    private IndexProvider indexProvider;
-    private GraphDatabaseService graphDatabaseService;
-    private GraphDatabase graphDatabase;
-
-    public MappingInfrastructure(GraphDatabase graphDatabase, PlatformTransactionManager transactionManager) {
-        this.graphDatabase = graphDatabase;
-        this.transactionManager = transactionManager;
-    }
-
-    public MappingInfrastructure() {
-    }
-
-    // @PostConstruct // TODO
-    public void postConstruct() {
-        if (this.mappingContext == null) this.mappingContext = new Neo4jMappingContext();
-        if (this.graphDatabase == null) {
-            this.graphDatabase = new DelegatingGraphDatabase(graphDatabaseService);
-        }
-        if (nodeEntityInstantiator == null) {
-            nodeEntityInstantiator = new NodeEntityInstantiator(entityStateHandler);
-        }
-        if (relationshipEntityInstantiator == null) {
-            relationshipEntityInstantiator = new RelationshipEntityInstantiator(entityStateHandler);
-        }
-        if (this.typeRepresentationStrategyFactory==null) {
-            this.typeRepresentationStrategyFactory = new TypeRepresentationStrategyFactory(graphDatabase);
-        }
-        if (this.nodeTypeRepresentationStrategy == null) {
-            this.nodeTypeRepresentationStrategy = typeRepresentationStrategyFactory.getNodeTypeRepresentationStrategy();
-        }
-        if (this.relationshipTypeRepresentationStrategy == null) {
-            this.relationshipTypeRepresentationStrategy = typeRepresentationStrategyFactory.getRelationshipTypeRepresentationStrategy();
-        }
-        this.typeRepresentationStrategies = new TypeRepresentationStrategies(mappingContext, nodeTypeRepresentationStrategy, relationshipTypeRepresentationStrategy);
-
-        final EntityStateHandler entityStateHandler = new EntityStateHandler(mappingContext, graphDatabase);
-        EntityTools<Node> nodeEntityTools = new EntityTools<Node>(nodeTypeRepresentationStrategy, nodeEntityStateFactory, nodeEntityInstantiator,mappingContext);
-        EntityTools<Relationship> relationshipEntityTools = new EntityTools<Relationship>(relationshipTypeRepresentationStrategy, relationshipEntityStateFactory, relationshipEntityInstantiator, mappingContext);
-        this.entityPersister = new Neo4jEntityPersister(conversionService, nodeEntityTools, relationshipEntityTools, mappingContext, entityStateHandler);
-        this.entityRemover = new EntityRemover(this.entityStateHandler, nodeTypeRepresentationStrategy, relationshipTypeRepresentationStrategy, graphDatabase);
-        if (this.resultConverter==null) {
-            this.resultConverter = new EntityResultConverter<Object, Object>(conversionService,entityPersister);
-        }
-        this.graphDatabase.setResultConverter(resultConverter);
-        this.cypherQueryExecutor = new CypherQueryExecutor(graphDatabase.queryEngineFor(QueryType.Cypher, resultConverter));
-        if (this.indexProvider == null) {
-            this.indexProvider = new IndexProviderImpl(this.mappingContext, graphDatabase);
-        }
-    }
-
-
-    public void setTransactionManager(PlatformTransactionManager transactionManager) {
-        this.transactionManager = transactionManager;
-    }
-
-    public void setRelationshipEntityInstantiator(EntityInstantiator<Relationship> relationshipEntityInstantiator) {
-        this.relationshipEntityInstantiator = relationshipEntityInstantiator;
-    }
-
-    public void setNodeEntityInstantiator(EntityInstantiator<Node> nodeEntityInstantiator) {
-        this.nodeEntityInstantiator = nodeEntityInstantiator;
-    }
-
-
-    public void setEntityStateHandler(EntityStateHandler entityStateHandler) {
-        this.entityStateHandler = entityStateHandler;
-    }
-
-    public void setNodeEntityStateFactory(EntityStateFactory<Node> nodeEntityStateFactory) {
-        this.nodeEntityStateFactory = nodeEntityStateFactory;
-    }
-
-    public void setRelationshipEntityStateFactory(EntityStateFactory<Relationship> relationshipEntityStateFactory) {
-        this.relationshipEntityStateFactory = relationshipEntityStateFactory;
-    }
-
-    public EntityStateHandler getEntityStateHandler() {
-        return entityStateHandler;
-    }
-
-    public TypeRepresentationStrategy<Node> getNodeTypeRepresentationStrategy() {
-        return nodeTypeRepresentationStrategy;
-    }
-
-    public void setNodeTypeRepresentationStrategy(TypeRepresentationStrategy<Node> nodeTypeRepresentationStrategy) {
+    public MappingInfrastructure(TypeRepresentationStrategy<Node> nodeTypeRepresentationStrategy, Validator validator, ConversionService conversionService, GraphDatabase graphDatabase, GraphDatabaseService graphDatabaseService, IndexProvider indexProvider, ResultConverter resultConverter, PlatformTransactionManager transactionManager, TypeRepresentationStrategies typeRepresentationStrategies, EntityRemover entityRemover, Neo4jEntityPersister entityPersister, EntityStateHandler entityStateHandler, CypherQueryExecutor cypherQueryExecutor, Neo4jMappingContext mappingContext, TypeRepresentationStrategy<Relationship> relationshipTypeRepresentationStrategy) {
         this.nodeTypeRepresentationStrategy = nodeTypeRepresentationStrategy;
-    }
-
-    public TypeRepresentationStrategy<Relationship> getRelationshipTypeRepresentationStrategy() {
-        return relationshipTypeRepresentationStrategy;
-    }
-
-    public void setRelationshipTypeRepresentationStrategy(TypeRepresentationStrategy<Relationship> relationshipTypeRepresentationStrategy) {
+        this.validator = validator;
+        this.conversionService = conversionService;
+        this.graphDatabase = graphDatabase;
+        this.graphDatabaseService = graphDatabaseService;
+        this.indexProvider = indexProvider;
+        this.resultConverter = resultConverter;
+        this.transactionManager = transactionManager;
+        this.typeRepresentationStrategies = typeRepresentationStrategies;
+        this.entityRemover = entityRemover;
+        this.entityPersister = entityPersister;
+        this.entityStateHandler = entityStateHandler;
+        this.cypherQueryExecutor = cypherQueryExecutor;
+        this.mappingContext = mappingContext;
         this.relationshipTypeRepresentationStrategy = relationshipTypeRepresentationStrategy;
     }
 
@@ -167,77 +76,59 @@ public class MappingInfrastructure {
         return conversionService;
     }
 
-    public void setConversionService(ConversionService conversionService) {
-        this.conversionService = conversionService;
-    }
-
     public Validator getValidator() {
         return validator;
     }
 
-    public void setValidator(Validator validatorFactory) {
-        this.validator = validatorFactory;
+    public TypeRepresentationStrategy<Node> getNodeTypeRepresentationStrategy() {
+        return nodeTypeRepresentationStrategy;
     }
 
-    public void setMappingContext(Neo4jMappingContext mappingContext) {
-        this.mappingContext = mappingContext;
-    }
-
-
-    public GraphDatabaseService getGraphDatabaseService() {
-        return graphDatabaseService;
-    }
-
-    public void setGraphDatabaseService(GraphDatabaseService graphDatabaseService) {
-        this.graphDatabaseService = graphDatabaseService;
-    }
-
-    public void setGraphDatabase(GraphDatabase graphDatabase) {
-        this.graphDatabase = graphDatabase;
-    }
-
-    public GraphDatabase getGraphDatabase() {
-        return graphDatabase;
-    }
-
-    public ResultConverter getResultConverter() {
-        return resultConverter;
-    }
-
-    public EntityRemover getEntityRemover() {
-        return entityRemover;
-    }
-
-    public IndexProvider getIndexProvider() {
-        return indexProvider;
-    }
-
-    public Neo4jEntityPersister getEntityPersister() {
-        return entityPersister;
-    }
-
-    public PlatformTransactionManager getTransactionManager() {
-        return transactionManager;
-    }
-
-    public TypeRepresentationStrategies getTypeRepresentationStrategies() {
-        return typeRepresentationStrategies;
-    }
-
-
-    public CypherQueryExecutor getCypherQueryExecutor() {
-        return cypherQueryExecutor;
+    public TypeRepresentationStrategy<Relationship> getRelationshipTypeRepresentationStrategy() {
+        return relationshipTypeRepresentationStrategy;
     }
 
     public Neo4jMappingContext getMappingContext() {
         return mappingContext;
     }
 
-    public void setTypeRepresentationStrategyFactory(TypeRepresentationStrategyFactory typeRepresentationStrategyFactory) {
-        this.typeRepresentationStrategyFactory = typeRepresentationStrategyFactory;
+    public CypherQueryExecutor getCypherQueryExecutor() {
+        return cypherQueryExecutor;
     }
-    
-    public void setIndexProvider(IndexProvider indexProvider) {
-        this.indexProvider = indexProvider;
+
+    public EntityStateHandler getEntityStateHandler() {
+        return entityStateHandler;
+    }
+
+    public Neo4jEntityPersister getEntityPersister() {
+        return entityPersister;
+    }
+
+    public EntityRemover getEntityRemover() {
+        return entityRemover;
+    }
+
+    public TypeRepresentationStrategies getTypeRepresentationStrategies() {
+        return typeRepresentationStrategies;
+    }
+
+    public PlatformTransactionManager getTransactionManager() {
+        return transactionManager;
+    }
+
+    public ResultConverter getResultConverter() {
+        return resultConverter;
+    }
+
+    public IndexProvider getIndexProvider() {
+        return indexProvider;
+    }
+
+    public GraphDatabaseService getGraphDatabaseService() {
+        return graphDatabaseService;
+    }
+
+    public GraphDatabase getGraphDatabase() {
+        return graphDatabase;
     }
 }

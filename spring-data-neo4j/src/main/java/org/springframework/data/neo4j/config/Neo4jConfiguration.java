@@ -38,7 +38,8 @@ import org.springframework.data.neo4j.fieldaccess.NodeDelegatingFieldAccessorFac
 import org.springframework.data.neo4j.fieldaccess.RelationshipDelegatingFieldAccessorFactory;
 import org.springframework.data.neo4j.mapping.EntityInstantiator;
 import org.springframework.data.neo4j.support.DelegatingGraphDatabase;
-import org.springframework.data.neo4j.support.MappingInfrastructure;
+import org.springframework.data.neo4j.support.Infrastructure;
+import org.springframework.data.neo4j.support.MappingInfrastructureFactoryBean;
 import org.springframework.data.neo4j.support.Neo4jExceptionTranslator;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.data.neo4j.support.index.IndexProvider;
@@ -95,8 +96,8 @@ public abstract class Neo4jConfiguration {
     }
 
     @Bean
-    public MappingInfrastructure mappingInfrastructure() throws Exception {
-        MappingInfrastructure infrastructure = new MappingInfrastructure();
+    public Infrastructure mappingInfrastructure() throws Exception {
+        MappingInfrastructureFactoryBean infrastructure = new MappingInfrastructureFactoryBean();
         infrastructure.setGraphDatabaseService(getGraphDatabaseService());
         infrastructure.setTypeRepresentationStrategyFactory(typeRepresentationStrategyFactory());
         infrastructure.setConversionService(neo4jConversionService());
@@ -119,13 +120,13 @@ public abstract class Neo4jConfiguration {
         if (validator!=null) {
             infrastructure.setValidator(validator);
         }
-        return infrastructure;
+        infrastructure.afterPropertiesSet();
+        return infrastructure.getObject();
     }
 
-    @Bean(initMethod="postConstruct")
+    @Bean
     public Neo4jTemplate neo4jTemplate() throws Exception {
-        final Neo4jTemplate neo4jTemplate = new Neo4jTemplate();
-        neo4jTemplate.setInfrastructure(mappingInfrastructure());
+        final Neo4jTemplate neo4jTemplate = new Neo4jTemplate(mappingInfrastructure());
         nodeEntityStateFactory().setTemplate(neo4jTemplate);
         relationshipEntityStateFactory().setTemplate(neo4jTemplate);
         return neo4jTemplate;

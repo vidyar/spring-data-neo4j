@@ -40,6 +40,7 @@ public abstract class DelegatingFieldAccessorFactory implements FieldAccessorFac
     protected abstract Collection<? extends FieldAccessorFactory> createAccessorFactories();
 
     public DelegatingFieldAccessorFactory(final Neo4jTemplate template) {
+        if (template == null) throw new IllegalArgumentException("template is null");
         this.template = template;
         this.fieldAccessorFactories.addAll(createAccessorFactories());
         this.fieldAccessorListenerFactories.addAll(createListenerFactories());

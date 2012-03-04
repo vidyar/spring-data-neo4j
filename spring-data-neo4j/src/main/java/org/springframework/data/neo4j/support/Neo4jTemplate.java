@@ -60,7 +60,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.annotation.PostConstruct;
 import javax.validation.Validator;
 import java.util.Collections;
 import java.util.Map;
@@ -82,30 +81,21 @@ TODO This is a  merge of GraphDatabaseContext and the previous Neo4jTemplate, so
 public class Neo4jTemplate implements Neo4jOperations, EntityPersister {
     private static final Logger log = LoggerFactory.getLogger(Neo4jTemplate.class);
 
-    private MappingInfrastructure infrastructure = new MappingInfrastructure();
-
-    /**
-     * default constructor for dependency injection, TODO provide dependencies at creation time
-     */
-    public Neo4jTemplate() {
-        this.infrastructure = new MappingInfrastructure();
-    }
+    private final Infrastructure infrastructure;
 
     /**
      * @param graphDatabase      the neo4j graph database
      * @param transactionManager if passed in, will be used to create implicit transactions whenever needed
      */
     public Neo4jTemplate(final GraphDatabase graphDatabase, PlatformTransactionManager transactionManager) {
-        notNull(graphDatabase, "graphDatabase");
-        this.infrastructure = new MappingInfrastructure(graphDatabase,transactionManager);
+        this(MappingInfrastructureFactoryBean.createDirect(graphDatabase, transactionManager));
     }
 
     public Neo4jTemplate(final GraphDatabase graphDatabase) {
-        notNull(graphDatabase, "graphDatabase");
-        this.infrastructure = new MappingInfrastructure(graphDatabase,null);
+        this(graphDatabase, null);
     }
 
-    public Neo4jTemplate(MappingInfrastructure infrastructure) {
+    public Neo4jTemplate(Infrastructure infrastructure) {
         this.infrastructure = infrastructure;
     }
 
@@ -286,12 +276,6 @@ public class Neo4jTemplate implements Neo4jOperations, EntityPersister {
      */
     public Transaction beginTx() { // TODO remove !
         return infrastructure.getGraphDatabaseService().beginTx();
-    }
-
-    @SuppressWarnings("unused")
-    @PostConstruct
-    public void postConstruct() {
-        infrastructure.postConstruct();
     }
 
     @Override
@@ -629,11 +613,7 @@ public class Neo4jTemplate implements Neo4jOperations, EntityPersister {
         return infrastructure.getGraphDatabaseService();
     }
 
-    public void setInfrastructure(MappingInfrastructure infrastructure) {
-        this.infrastructure = infrastructure;
-    }
-
-    public MappingInfrastructure getInfrastructure() {
+    public Infrastructure getInfrastructure() {
         return infrastructure;
     }
 
