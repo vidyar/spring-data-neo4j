@@ -23,8 +23,8 @@ import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
-import org.neo4j.kernel.Config;
-import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.neo4j.kernel.AbstractGraphDatabase;
+import org.neo4j.kernel.configuration.Config;
 import org.objectweb.jotm.Current;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.neo4j.support.node.Neo4jHelper;
@@ -34,7 +34,6 @@ import org.springframework.transaction.jta.ManagedTransactionAdapter;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -115,8 +114,8 @@ public class JOTMIntegrationTest {
 
     @Test
     public void databaseConfiguredWithSpringJtaShouldUseJtaTransactionManager() throws SystemException, NotSupportedException {
-        Map<Object, Object> config = ((EmbeddedGraphDatabase) gds).getConfig().getParams();
-        assertEquals("spring-jta", config.get(Config.TXMANAGER_IMPLEMENTATION));
+        final Config config = ((AbstractGraphDatabase) gds).getConfig();
+        assertEquals("spring-jta", config.getParams().get(Config.TXMANAGER_IMPLEMENTATION));
 
         JtaTransactionManager tm = ctx.getBean("transactionManager", JtaTransactionManager.class);
         Transaction transaction = tm.createTransaction("jotm", 1000);

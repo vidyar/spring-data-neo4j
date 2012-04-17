@@ -19,7 +19,7 @@ package org.springframework.data.neo4j.config;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.kernel.AbstractGraphDatabase;
+import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.kernel.impl.transaction.SpringTransactionManager;
 import org.neo4j.kernel.impl.transaction.UserTransactionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +47,7 @@ import org.springframework.data.neo4j.support.index.IndexProviderImpl;
 import org.springframework.data.neo4j.support.mapping.ClassNameAlias;
 import org.springframework.data.neo4j.support.mapping.EntityAlias;
 import org.springframework.data.neo4j.support.mapping.EntityStateHandler;
+import org.springframework.data.neo4j.support.mapping.IndexCreationMappingEventListener;
 import org.springframework.data.neo4j.support.mapping.Neo4jEntityFetchHandler;
 import org.springframework.data.neo4j.support.mapping.Neo4jMappingContext;
 import org.springframework.data.neo4j.support.mapping.SourceStateTransmitter;
@@ -61,6 +62,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.jta.UserTransactionAdapter;
 
+import javax.transaction.TransactionManager;
 import javax.validation.Validator;
 
 import static java.util.Arrays.asList;
@@ -241,12 +243,18 @@ public abstract class Neo4jConfiguration {
         return createJtaTransactionManager();
 	}
 
+    @Bean
+    public IndexCreationMappingEventListener indexCreationMappingEventListener() throws Exception {
+        return new IndexCreationMappingEventListener(neo4jTemplate());
+    }
+
     protected JtaTransactionManager createJtaTransactionManager() {
         JtaTransactionManager jtaTm = new JtaTransactionManager();
         final GraphDatabaseService gds = getGraphDatabaseService();
-        if (gds instanceof AbstractGraphDatabase) {
+        if (gds instanceof GraphDatabaseAPI) {
+            final TransactionManager txManager = ((GraphDatabaseAPI) gds).getTxManager();
             jtaTm.setTransactionManager(new SpringTransactionManager(gds));
-            jtaTm.setUserTransaction(new UserTransactionImpl(gds));
+            jtaTm.setUserTransaction(new UserTransactionImpl(txManager));
         } else {
             final NullTransactionManager tm = new NullTransactionManager();
             jtaTm.setTransactionManager(tm);
